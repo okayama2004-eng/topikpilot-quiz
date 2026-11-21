@@ -1,0 +1,1 @@
+{"description":"TOPIKPILOT ドラマで学ぶ韓国語 単語クイズ（フラッシュカード＆4択クイズ）","engines":{"node":">=18"},"name":"topikpilot-quiz","private":true,"scripts":{"start":"node server.js"},"version":"1.0.0"}

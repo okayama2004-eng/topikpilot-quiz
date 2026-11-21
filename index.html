@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOPIKPILOT 単語クイズ | ドラマで学ぶ韓国語</title>
+<meta name="description" content="Instagram「ドラマで学ぶ韓国語」TOPIKPILOTの投稿フレーズで復習できるフラッシュカード＆4択クイズ">
+<style>
+  :root{
+    --bg:#0f1220; --card:#1b1f33; --card2:#232842; --text:#f2f3f8; --muted:#a7abc2;
+    --accent:#ff5c7a; --accent2:#ffb84d; --ok:#39d98a; --ng:#ff5c5c; --border:#2e3352;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{margin:0; font-family:-apple-system,"Hiragino Kaku Gothic ProN","Noto Sans JP",sans-serif; background:var(--bg); color:var(--text)}
+  .wrap{max-width:560px; margin:0 auto; padding:20px 16px 48px}
+  header{text-align:center; padding:18px 0 6px}
+  .logo{font-size:15px; letter-spacing:.35em; color:var(--accent2); font-weight:700}
+  h1{font-size:26px; margin:8px 0 4px}
+  .sub{color:var(--muted); font-size:14px; line-height:1.6}
+  .tabs{display:flex; gap:8px; margin:22px 0 16px}
+  .tab{flex:1; padding:12px; border-radius:12px; border:1px solid var(--border); background:var(--card); color:var(--text); font-size:15px; font-weight:700; cursor:pointer}
+  .tab.active{background:var(--accent); border-color:var(--accent); color:#fff}
+  .panel{background:var(--card); border:1px solid var(--border); border-radius:18px; padding:22px 18px; min-height:300px}
+  .ep{color:var(--accent2); font-size:12px; font-weight:700; letter-spacing:.08em}
+  .ko{font-size:34px; font-weight:800; line-height:1.35; margin:12px 0 2px; word-break:keep-all}
+  .reading{color:var(--muted); font-size:15px}
+  .ja{font-size:22px; font-weight:700; margin-top:16px; line-height:1.5}
+  .hidden-answer{visibility:hidden}
+  .btn{display:block; width:100%; padding:14px; margin-top:14px; border:none; border-radius:12px; background:var(--accent); color:#fff; font-size:16px; font-weight:700; cursor:pointer}
+  .btn.sub{background:var(--card2); color:var(--text); border:1px solid var(--border)}
+  .row{display:flex; gap:8px}
+  .row .btn{flex:1}
+  .count{color:var(--muted); font-size:13px; text-align:center; margin-top:12px}
+  .choices{display:grid; gap:10px; margin-top:18px}
+  .choice{padding:14px; border-radius:12px; border:1px solid var(--border); background:var(--card2); color:var(--text); font-size:16px; text-align:left; cursor:pointer}
+  .choice.correct{border-color:var(--ok); background:rgba(57,217,138,.15)}
+  .choice.wrong{border-color:var(--ng); background:rgba(255,92,92,.12)}
+  .choice:disabled{opacity:.9; cursor:default}
+  .score{font-size:20px; font-weight:800; text-align:center; margin:10px 0}
+  .feedback{text-align:center; font-size:15px; min-height:24px; margin-top:12px; font-weight:700}
+  footer{text-align:center; margin-top:28px; color:var(--muted); font-size:13px; line-height:1.8}
+  footer a{color:var(--accent2); text-decoration:none; font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo">TOPIKPILOT</div>
+    <h1>ドラマで学ぶ韓国語<br>単語クイズ</h1>
+    <p class="sub">Instagramの投稿に出てきたフレーズで復習しよう。<br>カードで覚えて、クイズでチェック！</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-card" onclick="showMode('card')">📇 フラッシュカード</button>
+    <button class="tab" id="tab-quiz" onclick="showMode('quiz')">✏️ 4択クイズ</button>
+  </div>
+
+  <section id="mode-card">
+    <div class="panel">
+      <div class="ep" id="card-ep"></div>
+      <div class="ko" id="card-ko"></div>
+      <div class="reading" id="card-reading"></div>
+      <div class="ja hidden-answer" id="card-ja"></div>
+      <button class="btn" id="card-flip" onclick="flipCard()">意味を見る</button>
+      <div class="row">
+        <button class="btn sub" onclick="moveCard(-1)">← 前へ</button>
+        <button class="btn sub" onclick="shuffleCards()">🔀 シャッフル</button>
+        <button class="btn sub" onclick="moveCard(1)">次へ →</button>
+      </div>
+      <div class="count" id="card-count"></div>
+    </div>
+  </section>
+
+  <section id="mode-quiz" style="display:none">
+    <div class="panel">
+      <div id="quiz-main">
+        <div class="ep" id="quiz-ep"></div>
+        <div class="ko" id="quiz-ko"></div>
+        <div class="reading" id="quiz-reading"></div>
+        <div class="choices" id="quiz-choices"></div>
+        <div class="feedback" id="quiz-feedback"></div>
+        <button class="btn" id="quiz-next" style="display:none" onclick="nextQuestion()">次の問題 →</button>
+        <div class="count" id="quiz-count"></div>
+      </div>
+      <div id="quiz-result" style="display:none">
+        <div class="score" id="quiz-score"></div>
+        <p class="sub" style="text-align:center" id="quiz-message"></p>
+        <button class="btn" onclick="startQuiz()">もう一度挑戦する</button>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    毎日更新中 📺 <a href="https://www.instagram.com/mike_seoul_kr/" target="_blank" rel="noopener">@mike_seoul_kr（TOPIKPILOT）</a><br>
+    「ドラマで学ぶ韓国語」の投稿フレーズから出題しています
+  </footer>
+</div>
+
+<script>
+const WORDS = [
+  {ko:"대박", reading:"テバク", ja:"すごい", ep:"第57話「驚き」"},
+  {ko:"헐", reading:"ホル", ja:"えっ", ep:"第57話「驚き」"},
+  {ko:"진짜요?", reading:"チンチャヨ", ja:"本当ですか？", ep:"第57話「驚き」"},
+  {ko:"기뻐요", reading:"キッポヨ", ja:"嬉しいです", ep:"第51話「嬉しい・悲しい」"},
+  {ko:"슬퍼요", reading:"スルポヨ", ja:"悲しいです", ep:"第51話「嬉しい・悲しい」"},
+  {ko:"말 놓을까요?", reading:"マル ノウルッカヨ", ja:"タメ口にしましょうか？", ep:"第58話「タメ口にしよう」"},
+  {ko:"마음에 들어요", reading:"マウメ トゥロヨ", ja:"気に入りました", ep:"第59話「記念日」"},
+  {ko:"기념일", reading:"キニョミル", ja:"記念日", ep:"第59話「記念日」"},
+  {ko:"잘했어요", reading:"チャレッソヨ", ja:"よくできました", ep:"第56話「ほめる」"},
+  {ko:"멋있어요", reading:"モシッソヨ", ja:"かっこいいです", ep:"第56話「ほめる」"},
+  {ko:"예뻐요", reading:"イェッポヨ", ja:"きれいです", ep:"第56話「ほめる」"},
+  {ko:"화났어요?", reading:"ファナッソヨ", ja:"怒ってますか？", ep:"第55話「けんか」"},
+  {ko:"했잖아", reading:"ヘッチャナ", ja:"言ったじゃない", ep:"第55話「けんか」"},
+  {ko:"어렵지만 재미있어요", reading:"オリョプチマン チェミイッソヨ", ja:"難しいけど面白いです", ep:"第54話「〜けど」"},
+  {ko:"늦어서", reading:"ヌジョソ", ja:"遅れて", ep:"第53話「理由」"},
+  {ko:"추워요", reading:"チュウォヨ", ja:"寒いです", ep:"第65話「天気」"},
+  {ko:"더워요", reading:"トウォヨ", ja:"暑いです", ep:"第65話「天気」"},
+  {ko:"비가 와요", reading:"ピガ ワヨ", ja:"雨が降ります", ep:"第65話「天気」"},
+  {ko:"눈이 와요", reading:"ヌニ ワヨ", ja:"雪が降ります", ep:"第65話「天気」"},
+  {ko:"걱정돼요", reading:"コクチョンドェヨ", ja:"心配です", ep:"第52話「心配」"},
+  {ko:"하지 마세요", reading:"ハジ マセヨ", ja:"しないでください", ep:"第52話「心配」"},
+  {ko:"주세요", reading:"チュセヨ", ja:"ください", ep:"第50話「半年まとめ」"},
+  {ko:"얼마예요?", reading:"オルマエヨ", ja:"いくらですか？", ep:"第50話「半年まとめ」"},
+  {ko:"뭐 드릴까요?", reading:"ムォ ドゥリルッカヨ", ja:"何をお持ちしましょうか", ep:"お店で必ず言われる3つ"},
+  {ko:"포장이세요?", reading:"ポジャンイセヨ", ja:"お持ち帰りですか？", ep:"お店で必ず言われる3つ"},
+  {ko:"바꿔 주세요", reading:"パックォ ジュセヨ", ja:"交換してください", ep:"第48話「交換」"},
+  {ko:"영수증", reading:"ヨンスジュン", ja:"レシート", ep:"第48話「交換」"},
+  {ko:"포장해 주세요", reading:"ポジャンヘ ジュセヨ", ja:"包んでください", ep:"第47話「お土産」"},
+  {ko:"괜찮아요", reading:"ケンチャナヨ", ja:"結構です／大丈夫です", ep:"第49話「袋とレシート」"},
+  {ko:"제일 좋아요", reading:"チェイル チョアヨ", ja:"一番いいです", ep:"第46話「比べる」"},
+  {ko:"써 보세요", reading:"ッソ ボセヨ", ja:"使ってみてください", ep:"第45話「〜してみる」"},
+  {ko:"입어도 돼요?", reading:"イボド ドェヨ", ja:"着てもいいですか？", ep:"第44話「〜してもいい？」"},
+  {ko:"깎아 주세요", reading:"ッカッカ ジュセヨ", ja:"まけてください", ep:"第43話「値引き」"},
+  {ko:"빨간색", reading:"ッパルガンセク", ja:"赤", ep:"第42話「サイズと色」"},
+  {ko:"파란색", reading:"パランセク", ja:"青", ep:"第42話「サイズと色」"},
+  {ko:"축하해요", reading:"チュカヘヨ", ja:"おめでとうございます", ep:"第40話「誕生日パーティー」"},
+  {ko:"멀어요", reading:"モロヨ", ja:"遠いです", ep:"第39話「遠い・近い」"},
+  {ko:"가까워요", reading:"カッカウォヨ", ja:"近いです", ep:"第39話「遠い・近い」"},
+  {ko:"뭐로 가요?", reading:"ムォロ ガヨ", ja:"何で行きますか？", ep:"第38話「手段」"},
+  {ko:"좀 보여 주세요", reading:"チョム ボヨ ジュセヨ", ja:"ちょっと見せてください", ep:"第41話「見せてもらう」"}
+];
+
+// ---------- フラッシュカード ----------
+let order = WORDS.map((_, i) => i);
+let cardPos = 0;
+let flipped = false;
+
+function renderCard(){
+  const w = WORDS[order[cardPos]];
+  document.getElementById('card-ep').textContent = w.ep + ' より';
+  document.getElementById('card-ko').textContent = w.ko;
+  document.getElementById('card-reading').textContent = '（' + w.reading + '）';
+  const ja = document.getElementById('card-ja');
+  ja.textContent = w.ja;
+  ja.classList.add('hidden-answer');
+  document.getElementById('card-flip').textContent = '意味を見る';
+  flipped = false;
+  document.getElementById('card-count').textContent = (cardPos + 1) + ' / ' + WORDS.length;
+}
+function flipCard(){
+  const ja = document.getElementById('card-ja');
+  flipped = !flipped;
+  ja.classList.toggle('hidden-answer', !flipped);
+  document.getElementById('card-flip').textContent = flipped ? '意味を隠す' : '意味を見る';
+}
+function moveCard(d){
+  cardPos = (cardPos + d + WORDS.length) % WORDS.length;
+  renderCard();
+}
+function shuffleCards(){
+  for (let i = order.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+  cardPos = 0;
+  renderCard();
+}
+
+// ---------- 4択クイズ ----------
+const QUIZ_LEN = 10;
+let quizList = [], quizPos = 0, quizScore = 0, answered = false;
+
+function shuffleArr(a){
+  const arr = a.slice();
+  for (let i = arr.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+function startQuiz(){
+  quizList = shuffleArr(WORDS).slice(0, QUIZ_LEN);
+  quizPos = 0; quizScore = 0;
+  document.getElementById('quiz-result').style.display = 'none';
+  document.getElementById('quiz-main').style.display = 'block';
+  renderQuestion();
+}
+function renderQuestion(){
+  answered = false;
+  const w = quizList[quizPos];
+  document.getElementById('quiz-ep').textContent = w.ep + ' より';
+  document.getElementById('quiz-ko').textContent = w.ko;
+  document.getElementById('quiz-reading').textContent = '（' + w.reading + '）';
+  document.getElementById('quiz-feedback').textContent = '';
+  document.getElementById('quiz-next').style.display = 'none';
+  document.getElementById('quiz-count').textContent = '問題 ' + (quizPos + 1) + ' / ' + QUIZ_LEN + '　スコア ' + quizScore;
+  const others = shuffleArr(WORDS.filter(x => x.ja !== w.ja)).slice(0, 3);
+  const choices = shuffleArr([w].concat(others));
+  const box = document.getElementById('quiz-choices');
+  box.innerHTML = '';
+  choices.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'choice';
+    b.textContent = c.ja;
+    b.onclick = () => answer(b, c.ja === w.ja);
+    box.appendChild(b);
+  });
+}
+function answer(btn, correct){
+  if (answered) return;
+  answered = true;
+  const w = quizList[quizPos];
+  document.querySelectorAll('#quiz-choices .choice').forEach(b => {
+    b.disabled = true;
+    if (b.textContent === w.ja) b.classList.add('correct');
+  });
+  const fb = document.getElementById('quiz-feedback');
+  if (correct){
+    quizScore++;
+    fb.textContent = '⭕ 正解！';
+    fb.style.color = 'var(--ok)';
+  } else {
+    btn.classList.add('wrong');
+    fb.textContent = '❌ 正解は「' + w.ja + '」';
+    fb.style.color = 'var(--ng)';
+  }
+  document.getElementById('quiz-count').textContent = '問題 ' + (quizPos + 1) + ' / ' + QUIZ_LEN + '　スコア ' + quizScore;
+  const next = document.getElementById('quiz-next');
+  next.textContent = (quizPos + 1 >= QUIZ_LEN) ? '結果を見る →' : '次の問題 →';
+  next.style.display = 'block';
+}
+function nextQuestion(){
+  quizPos++;
+  if (quizPos >= QUIZ_LEN){
+    document.getElementById('quiz-main').style.display = 'none';
+    const r = document.getElementById('quiz-result');
+    r.style.display = 'block';
+    document.getElementById('quiz-score').textContent = QUIZ_LEN + '問中 ' + quizScore + '問 正解！';
+    document.getElementById('quiz-message').textContent =
+      quizScore === QUIZ_LEN ? '完璧です！ドラマのフレーズ、全部覚えましたね 🎉' :
+      quizScore >= 7 ? 'すごい！あと少しで完璧です 💪' :
+      quizScore >= 4 ? 'いいペースです。カードで復習してまた挑戦してね 📚' :
+      'まずはフラッシュカードでフレーズに慣れましょう 📇';
+  } else {
+    renderQuestion();
+  }
+}
+
+// ---------- モード切替 ----------
+function showMode(mode){
+  document.getElementById('mode-card').style.display = mode === 'card' ? 'block' : 'none';
+  document.getElementById('mode-quiz').style.display = mode === 'quiz' ? 'block' : 'none';
+  document.getElementById('tab-card').classList.toggle('active', mode === 'card');
+  document.getElementById('tab-quiz').classList.toggle('active', mode === 'quiz');
+  if (mode === 'quiz' && quizList.length === 0) startQuiz();
+}
+
+renderCard();
+</script>
+</body>
+</html>
