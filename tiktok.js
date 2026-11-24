@@ -1,6 +1,6 @@
 // TikTok Content Posting tool, mounted at /tiktok by server.js.
 // Zero-dependency (Node 20+ global fetch). Port of the Flask demo tool.
-// (Redeploy trigger: pick up Cloady environment variables.)
+// (Redeploy trigger: pick up Cloady environment variables, v2.)
 // Secrets come only from environment variables:
 //   TIKTOK_CLIENT_KEY, TIKTOK_CLIENT_SECRET, TIKTOK_REDIRECT_URI
 const crypto = require('crypto');
