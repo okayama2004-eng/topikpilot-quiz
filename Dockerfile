@@ -1,5 +1,5 @@
 FROM node:20-alpine
 WORKDIR /app
-COPY package.json server.js index.html tiktok.js ./
+COPY package.json server.js index.html tiktok.js tiktoklJjb6CUUOHtETB4awUHfp8kszZtfGepW.txt ./
 EXPOSE 3000
 CMD ["node", "server.js"]
