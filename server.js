@@ -1,7 +1,9 @@
 // Zero-dependency static server for the TOPIKPILOT quiz app.
+// /tiktok/* is handled by tiktok.js (KaikaLab Content Publisher tool).
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const tiktok = require('./tiktok');
 
 const port = process.env.PORT || 3000;
 const root = __dirname;
@@ -18,6 +20,10 @@ const types = {
 
 http.createServer((req, res) => {
   let urlPath = decodeURIComponent(req.url.split('?')[0]);
+  if (urlPath === '/tiktok' || urlPath.startsWith('/tiktok/')) {
+    tiktok.handle(req, res).catch(() => { try { res.writeHead(500); res.end('Error'); } catch (e) {} });
+    return;
+  }
   if (urlPath === '/') urlPath = '/index.html';
   const file = path.join(root, urlPath);
   if (!file.startsWith(root)) { res.writeHead(403); return res.end('Forbidden'); }
